@@ -33,9 +33,15 @@ Nhat<-function(mdl,kval=50) {
 
 
 #################################################################################################
-con<-odbcConnect("ravian_wh")
-sql<-"select * from ravianmarshbirdbase_v1 where ProjectCode = 'ASHMEADOWSNWR'"
-df<-sqlQuery(con,sql,rows_at_time=1)
+## RUN only once
+# con<-odbcConnect("ravian_wh")
+# sql<-"select * from ravianmarshbirdbase_v1 where ProjectCode = 'ASHMEADOWSNWR'"
+# df<-sqlQuery(con,sql,rows_at_time=1)
+# odbcClose(con)
+# save(df,file="//prbo.org/Data/Home/Petaluma/lsalas/Documents/lsalas/IandMR8/AshMeadows/Data/AshMeadows_marshbird_indicatorData.DRata")
+####################
+## Load the data saved above
+load(file="//prbo.org/Data/Home/Petaluma/lsalas/Documents/lsalas/IandMR8/AshMeadows/Data/AshMeadows_marshbird_indicatorData.DRata")
 
 flds<-c("ProjectCode","StudyArea","Transect","Point","SamplingUnitId","DecimalLatitude","DecimalLongitude","Visit",
 		"ProtocolCode","YearCollected","MonthCollected","DayCollected","JulianDay","Time","ScientificName",

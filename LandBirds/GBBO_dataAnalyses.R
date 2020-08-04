@@ -24,7 +24,21 @@ data<-try(readWorksheetFromFile(paste(basepth,"Ash Meadows NWR NBC data through 
 # Reading the habitat data
 load(file=paste(basepth,"/landbirdPoints_attributed_100.RData",sep=""))
 
+## Plots
+# p1 = Number of points surveyed per year
+# p2 = Number of transects surveyed per year
+# p3 = Average number of points per transect per year
+# p4 = Number of species detected per year
+# p5 = Average number of species detected per transect per year
+# plottop10 = Plot the top 10 species (numbers) across all years
+# plottop10y = Plot of the top 10 (numbers) species by year
+# p20r = Top 20 species across all years, reporting the ratio in Ash riparian vs elsewhere
+# p20c = Top 20 species raw counts
 
+# to see any one of these, just type: p1 or p4 or...
+
+##########
+## Run the code below to see the plots described above
 if(inherits(data,"try-error"))stop("Could not read the data. Please check the path, name of file and name of sheet")
 data$Species<-gsub("Blue-Gray Gnatcatcher","Blue-gray Gnatcatcher",data$Species)
 
@@ -202,6 +216,6 @@ top20rs<-top20r[1:20,]
 p20r<-ggplot(data=top20rs,aes(x=Species,y=ratio)) + geom_bar(stat="identity") +
 		coord_flip() + labs(title="Top 20 species across all years", x="Species", y="Number in AshRiparian per 1 elsewhere")
 
-p20c<-ggplot(data=top20rs,aes(x=Species,y=Count)) + geom_bar(stat="identity") +
+p20c<-ggplot(data=top20rs,aes(x=Species,y=RawCount)) + geom_bar(stat="identity") +
 		coord_flip() + labs(title="Top 20 species across all years", x="Species", y="Number detected")
 

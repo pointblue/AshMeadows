@@ -5,15 +5,25 @@
 
 
 ##Processing GBBO data for visualizations
+## This is Ash Meadows Point Count data curated by GBBO
+## This code file generates a series of graphs that describe the survey effort (e.g., number of transects run each year)
+## and the observations (e.g., number of species detected, top species detected, etc.)
+
+# Libraries needed
 library(XLConnect)
 library(plyr)
 library(unmarked)
 library(ggplot2)
 
+## This is the base path to where the files are located in Leo's computer.
+## Edit this path to point to the folder in your computer
 basepth<-"//prbo.org/Data/Home/Petaluma/lsalas/Documents/lsalas/IandMR8/AshMeadows"
+
+## Reading the excel file
 data<-try(readWorksheetFromFile(paste(basepth,"Ash Meadows NWR NBC data through 2016.xlsx",sep="/"),sheet="Point Count Data"))
-#habitat data
+# Reading the habitat data
 load(file=paste(basepth,"/landbirdPoints_attributed_100.RData",sep=""))
+
 
 if(inherits(data,"try-error"))stop("Could not read the data. Please check the path, name of file and name of sheet")
 data$Species<-gsub("Blue-Gray Gnatcatcher","Blue-gray Gnatcatcher",data$Species)

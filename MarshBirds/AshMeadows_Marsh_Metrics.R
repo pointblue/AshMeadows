@@ -4,17 +4,40 @@
 ###############################################################################
 
 
-# TODO: Add comment
-# 
-# Author: lsalas
-###############################################################################
+####################################################################################################################################
+####################################################################################################################################
+## READ THIS
 
-libs<-c("RODBC","ggplot2","unmarked","fitdistrplus")
+# This file is provided for documentation purposes. The objective of the file is to generate the data needed for the 
+# Ash Meadows indicator indices (plots), in the code file makePlots.R
+# Every time a new dataset is pulled from the AKN (for now using the Downloader tool: https://data.pointblue.org/apps/downloader/)
+# this code file must be run, judiciously inspecting the models and altering the code accordingly to choose the better models
+# and generating the file marshIndicators_Data.RData 
+
+####################################################################################################################################
+####################################################################################################################################
+
+## Checking for install of necessary packages
+libs<-c("ggplot2","unmarked","fitdistrplus","timeDate","maptools","sp")
+libcheck<-lapply(libs,function(pp){
+			if(!pp %in% installed.packages()){
+				install.packages(pp,repos="https://cloud.r-project.org/")
+				return(paste(pp,"was installed"))
+			}else{
+				return(paste(pp,"already installed"))
+			}
+		})
+
+## Load librariesf
 lapply(libs, require, character.only = TRUE)
 
-
+## MUST download the file AshMeadows_AnalysisUtils.R from the GitHub repository, then point to it in the next line
 source("C:/Users/lsalas/git/sparklemotion/AshMeadows/Marshbirds/AshMeadows_AnalysisUtils.R")
+
 basepth<-"//prbo.org/Data/Home/Petaluma/lsalas/Documents/lsalas/IandMR8/AshMeadows"
+
+##############################################################################################
+## Goodness of fit calculation functions
 
 fitstats<-function(mdl) {
 	observed <- getY(mdl@data)
@@ -33,16 +56,13 @@ Nhat<-function(mdl,kval=50) {
 
 
 #################################################################################################
-## RUN only once
-# con<-odbcConnect("ravian_wh")
-# sql<-"select * from ravianmarshbirdbase_v1 where ProjectCode = 'ASHMEADOWSNWR'"
-# df<-sqlQuery(con,sql,rows_at_time=1)
-# odbcClose(con)
-# save(df,file="//prbo.org/Data/Home/Petaluma/lsalas/Documents/lsalas/IandMR8/AshMeadows/Data/AshMeadows_marshbird_indicatorData.DRata")
-####################
-## Load the data saved above
-load(file="//prbo.org/Data/Home/Petaluma/lsalas/Documents/lsalas/IandMR8/AshMeadows/Data/AshMeadows_marshbird_indicatorData.DRata")
 
+## Read the data downloaded from the Downloader tool
+df<-read.csv("c:/users/lsalas/downloads/ashmeadows_all.csv", stringsAsFactors=FALSE)
+
+#load(file="//prbo.org/Data/Home/Petaluma/lsalas/Documents/lsalas/IandMR8/AshMeadows/Data/AshMeadows_marshbird_indicatorData.RData") #this is the same as the csv.
+
+## Find best-fitting models.
 flds<-c("ProjectCode","StudyArea","Transect","Point","SamplingUnitId","DecimalLatitude","DecimalLongitude","Visit",
 		"ProtocolCode","YearCollected","MonthCollected","DayCollected","JulianDay","Time","ScientificName",
 		"CommonName","BirdCd","DistanceFromObserver","SamplingEventStartTm","ObservationCount","NoObservations","FocalSpeciesInd",          
@@ -56,12 +76,13 @@ num.events<-aggregate(as.formula("ProtocolCode~ProjectCode+StudyArea+Transect+Po
 names(num.events)<-c("ProjectCode","StudyArea","Transect","Point","SamplingUnitId","YearCollected","numVisits")
 num.visits<-aggregate(as.formula("Visit~ProjectCode+StudyArea+Transect+Point+SamplingUnitId+YearCollected"),data=amdf,FUN=max)
 nrow(num.events)==nrow(num.visits)
-
 ash<-merge(amdf,num.events,all.x=T)
+
+# Visualize number of birds detected per species
 spdata<-aggregate(as.formula("ObservationCount~ProjectCode+StudyArea+Transect+Point+SamplingUnitId+YearCollected+JulianDay+BirdCd+SamplingEventStartTm"),data=ash,FUN=max)
 spplot1<-aggregate(as.formula("ObservationCount~ProjectCode+StudyArea+Transect+Point+SamplingUnitId+YearCollected+BirdCd"),data=spdata,FUN=mean)
 spplot2<-aggregate(as.formula("ObservationCount~ProjectCode+YearCollected+BirdCd"),data=spplot1,FUN=sum)
-library(ggplot2)
+
 p<-ggplot(data=spplot2,aes(x=YearCollected,y=ObservationCount)) + geom_point(aes(color=BirdCd)) + 
 		geom_line(aes(color=BirdCd)) + scale_x_continuous(breaks=c(2007,2009,2011,2013,2015,2017)) +
 		labs(x="",y="Mean # birds detected")
@@ -118,8 +139,8 @@ dev.off()
 
 ###############################################################################################################
 
+## Prepare the data for abundance modeling for RIRA
 datalist<-prepUDFdata(df=ash,eff,occ=FALSE)
-
 
 splst<-datalist[["RIRA"]]
 ydf<-splst$ydf
@@ -127,6 +148,7 @@ covsdf<-splst$covsdf
 ocovs<-splst$ocovs
 udfr<-unmarkedFramePCount(y=ydf,siteCovs=covsdf,obsCovs=ocovs)
 
+## Competing models
 mdl1r<-pcount(formula=as.formula("~JulianDay+diffRS ~as.factor(YearCollected)"),data=udfr,K=200,mixture="P")
 mdl1ar<-pcount(formula=as.formula("~JulianDay+diffRS+I(diffRS^2) ~as.factor(YearCollected)"),data=udfr,K=200,mixture="NB")
 mdl2r<-pcount(formula=as.formula("~JulianDay+diffRS ~as.factor(YearCollected)+StudyArea"),data=udfr,K=200,mixture="NB")	#TOP
@@ -139,7 +161,7 @@ mdl6r<-pcount(formula=as.formula("~JulianDay+I(JulianDay^2) ~as.factor(YearColle
 mdl7r<-pcount(formula=as.formula("~JulianDay ~as.factor(YearCollected)"),data=udfr,K=200,mixture="NB") 
 mdl7ra<-pcount(formula=as.formula("~JulianDay+diffRS ~as.factor(YearCollected)+log(Area_alkMeadow)"),data=udfr,K=200,mixture="P") 
 
-#top
+#top model
 predr<-predict(mdl7r,type="state")
 rira<-cbind(covsdf,predr)
 rira$Species<-"RIRA"
@@ -149,6 +171,7 @@ observed <- getY(mdl@data)
 expected <- fitted(mdl)
 resids <- residuals(mdl)
 
+## Visualize obs vs expected
 pdf<-data.frame(obs=apply(observed,1,mean,na.rm=T),pred=apply(expected,1,mean,na.rm=T),resid=apply(resids,1,mean,na.rm=T),Species="Yuma RIRA")
 plotsdf<-pdf
 p<-ggplot(data=pdf,aes(obs,pred)) + geom_point() + geom_smooth(method="lm") + theme_bw() + labs(x="Observed density",y="Expected density")
@@ -168,6 +191,8 @@ print(pb.N)
 
 ################################################################################################################
 
+
+## Prepare the data for abundance modeling for VIRA
 splst<-datalist[["VIRA"]]
 ydf<-splst$ydf
 covsdf<-splst$covsdf
@@ -211,6 +236,8 @@ gofvira<-parboot(mdl, fitstats, nsim=25, report=1)
 
 #############
 
+
+## Prepare the data for abundance modeling for SORA
 splst<-datalist[["SORA"]]
 ydf<-splst$ydf
 covsdf<-splst$covsdf
@@ -252,11 +279,12 @@ dev.off()
 mdl<-mdl7as
 gofsora<-parboot(mdl, fitstats, nsim=25, report=1)
 
-
+## PLot overall GOF
 p<-ggplot(data=plotsdf,aes(obs,pred)) + geom_point() + geom_smooth(method="lm") + theme_bw() + labs(x="Observed density",y="Expected density") + facet_wrap(~Species,ncol=3,scales="free")
 jpeg(filename=paste(basepth,"/plots/Marsh_RailGOF.jpg",sep=""),width=630,height=220,quality=100)
 print(p)
 dev.off()
 
+## Save the predicted values
 save(ash,eff,plotdf,rira,vira,sora,plotsdf,file=paste(basepth,"/marshIndicators_Data.RData",sep=""))
 

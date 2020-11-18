@@ -4,14 +4,14 @@
 ###############################################################################
 
 
-libs<-c("RODBC","ggplot2","unmarked","fitdistrplus")
+libs<-c("ggplot2","unmarked","fitdistrplus","timeDate","maptools","sp")
 lapply(libs, require, character.only = TRUE)
 
 
 source("C:/Users/lsalas/git/sparklemotion/AshMeadows/Marshbirds/AshMeadows_AnalysisUtils.R")
 basepth<-"//prbo.org/Data/Home/Petaluma/lsalas/Documents/lsalas/IandMR8/AshMeadows"
 
-
+## The data needed here is generated with the script: AshMeadows_Marsh_Metrics.R
 load(file=paste(basepth,"/marshIndicators_Data.RData",sep=""))
 
 ##################
@@ -20,14 +20,14 @@ sq<-ggplot(data=subset(plotdf,BirdCd != "COGA" & YearCollected > 2007),aes(x=Yea
 		scale_x_continuous(breaks=c(2008,2010,2012,2014,2016)) +
 		labs(x="Year",y="Total detections",fill="Species")
 
-png(filename=paste(basepth,"/plots/NumDetctions_bySpeciesYear.png",sep=""),width=860,height=600,res=200)
+png(filename=paste(basepth,"/plots/NumDetctions_bySpeciesYear.png",sep=""),width=3500,height=2400,res=600)
 print(sq)
 dev.off()
 
 #######################
 
 p<-ggplot(data=plotsdf,aes(obs,pred)) + geom_point() + geom_smooth(method="lm") + theme_bw() + labs(x="Observed density",y="Expected density") + facet_wrap(~Species,ncol=3,scales="free")
-jpeg(filename=paste(basepth,"/plots/Marsh_RailGOF.jpg",sep=""),width=630,height=220,quality=100)
+jpeg(filename=paste(basepth,"/plots/Marsh_RailGOF.jpg",sep=""),width=1200,height=450,quality=300)
 print(p)
 dev.off()
 
@@ -58,10 +58,10 @@ df1<-merge(df1,runmeans,by="YearCollected",all.x=T)
 
 mv<-runmeans[nrow(runmeans),]
 p1<-ggplot(df1,aes(x=YearCollected,y=Predicted)) + 
-		geom_rect(xmin=2006.5,xmax=2017.5,ymin=-5,ymax=vlvg[1],fill="red") + 
-		geom_rect(xmin=2006.5,xmax=2017.5,ymin=vlvg[1],ymax=vlvg[2],fill="#FFFF00") +
-		geom_rect(xmin=2006.5,xmax=2017.5,ymin=vlvg[2],ymax=vlvg[3],fill="#99CC00") +
-		geom_rect(xmin=2006.5,xmax=2017.5,ymin=vlvg[3],ymax=max(df1$Predicted)*1.1,fill="#009900") +
+		geom_rect(xmin=2006.5,xmax=2017.5,ymin=-5,ymax=vlvg[1],fill="#F7D1D2") + 
+		geom_rect(xmin=2006.5,xmax=2017.5,ymin=vlvg[1],ymax=vlvg[2],fill="#FEF1C6") +
+		geom_rect(xmin=2006.5,xmax=2017.5,ymin=vlvg[2],ymax=vlvg[3],fill="#E2EFD9") +
+		geom_rect(xmin=2006.5,xmax=2017.5,ymin=vlvg[3],ymax=max(df1$Predicted)*1.1,fill="#9CC97D") +
 		geom_hline(yintercept=0,color="black",size=0.5) +
 		geom_hline(yintercept=25,color="black",size=0.5,linetype="dotted") +
 		geom_hline(yintercept=50,color="black",size=0.5,linetype="dotted") +
@@ -70,15 +70,15 @@ p1<-ggplot(df1,aes(x=YearCollected,y=Predicted)) +
 		geom_point(aes(shape=Species),size=2) + 
 		scale_x_continuous(breaks=c(2007,2009,2011,2013,2015,2017)) + labs(x="",y="")
 
-png(filename=paste(basepth,"/plots/marshAbundance_bySpeciesYear.png",sep=""),width=750,height=700,res=200)
+png(filename=paste(basepth,"/plots/marshAbundance_bySpeciesYear.png",sep=""),width=2500,height=2200,res=600)
 print(p1)
 dev.off()
 
 p2<-ggplot(df1,aes(x=YearCollected,y=IndexVal)) + 
-		geom_rect(xmin=2006.5,xmax=2017.5,ymin=-2.5,ymax=vlvg[1],fill="red") + 
-		geom_rect(xmin=2006.5,xmax=2017.5,ymin=vlvg[1],ymax=vlvg[2],fill="#FFFF00") +
-		geom_rect(xmin=2006.5,xmax=2017.5,ymin=vlvg[2],ymax=vlvg[3],fill="#99CC00") +
-		geom_rect(xmin=2006.5,xmax=2017.5,ymin=vlvg[3],ymax=65,fill="#009900") +
+		geom_rect(xmin=2006.5,xmax=2017.5,ymin=-2.5,ymax=vlvg[1],fill="#F7D1D2") + 
+		geom_rect(xmin=2006.5,xmax=2017.5,ymin=vlvg[1],ymax=vlvg[2],fill="#FEF1C6") +
+		geom_rect(xmin=2006.5,xmax=2017.5,ymin=vlvg[2],ymax=vlvg[3],fill="#E2EFD9") +
+		geom_rect(xmin=2006.5,xmax=2017.5,ymin=vlvg[3],ymax=65,fill="#9CC97D") +
 		geom_hline(yintercept=10,color="black",size=0.5,linetype="dotted") +
 		geom_hline(yintercept=20,color="black",size=0.5,linetype="dotted") +
 		geom_hline(yintercept=30,color="black",size=0.5,linetype="dotted") +
@@ -90,7 +90,7 @@ p2<-ggplot(df1,aes(x=YearCollected,y=IndexVal)) +
 		scale_y_continuous(limits=c(0,60),breaks=c(0,10,20,30,40,50)) +
 		labs(x="",y="Density Index (birds/point)")
 
-png(filename=paste(basepth,"/plots/Marsh_abundanceIndex_v2.png",sep=""),width=550,height=700,res=200)
+png(filename=paste(basepth,"/plots/Marsh_abundanceIndex_v2.png",sep=""),width=2000,height=2200,res=600)
 print(p2)
 dev.off()
 
@@ -126,10 +126,10 @@ for(yy in 3:NROW(yrng)){
 }
 
 pd<-ggplot(divmeans,aes(x=year,y=IndexVal)) + 
-		geom_rect(xmin=2007.5,xmax=2017.5,ymin=-7,ymax=25,fill="red") + 
-		geom_rect(xmin=2007.5,xmax=2017.5,ymin=25,ymax=50,fill="#FFFF00") +
-		geom_rect(xmin=2007.5,xmax=2017.5,ymin=50,ymax=75,fill="#99CC00") +
-		geom_rect(xmin=2007.5,xmax=2017.5,ymin=75,ymax=105,fill="#009900") +
+		geom_rect(xmin=2007.5,xmax=2017.5,ymin=-7,ymax=25,fill="#F7D1D2") + 
+		geom_rect(xmin=2007.5,xmax=2017.5,ymin=25,ymax=50,fill="#FEF1C6") +
+		geom_rect(xmin=2007.5,xmax=2017.5,ymin=50,ymax=75,fill="#E2EFD9") +
+		geom_rect(xmin=2007.5,xmax=2017.5,ymin=75,ymax=105,fill="#9CC97D") +
 		geom_hline(yintercept=0,color="black",size=0.5) +
 		geom_hline(yintercept=20,color="black",size=0.5,linetype="dotted") +
 		geom_hline(yintercept=40,color="black",size=0.5,linetype="dotted") +
@@ -141,7 +141,7 @@ pd<-ggplot(divmeans,aes(x=year,y=IndexVal)) +
 		scale_y_continuous(limits=c(-2,100),breaks=seq(0,100,20)) +
 		theme_bw() + labs(x="",y="Diversity Index (% of max. diversity)")
 
-png(filename=paste(basepth,"/plots/Marsh_diversityIndex_v2.png",sep=""),width=550,height=600,res=200)
+png(filename=paste(basepth,"/plots/Marsh_diversityIndex_v2.png",sep=""),width=1500,height=1800,res=600)
 print(pd)
 dev.off()
 
@@ -150,13 +150,13 @@ dev.off()
 # As heat map - overall index
 
 ##Let's try this:
-#divmeans$pdiv<-divmeans$IndexVal/100
+divmeans$pdiv<-divmeans$IndexVal/100
 maxD<-max(df1$IndexVal,na.rm=T)*1.2
-densmeans<-unique(df1[,c("YearCollected","IndexVal")]);densmeans$pdens<-densmeans$IndexVal/maxD
+densmeans<-unique(df1[,c("YearCollected","IndexVal")]);densmeans$pdens<-densmeans$IndexVal
 densmeans<-na.omit(densmeans)
 
 #health<-divmeans[,c("year","pdiv")];health$pdens<-densmeans$IndexVal
-health<-divmeans[,c("year","IndexVal")];health$pdens<-densmeans$IndexVal
+health<-divmeans[,c("year","IndexVal")];health$pdens<-densmeans$pdens
 nh<-nrow(health)
 
 ### How does it look like?
@@ -180,7 +180,7 @@ df$geomean<-sqrt(df$x*df$y)
 maxH<-max(df$geomean); hlvg<-c(maxH*0.25,maxH*0.5,maxH*0.75)
 df$color<-ifelse(df$geomean<hlvg[1],"Poor",ifelse(df$geomean<hlvg[2],"Fair",ifelse(df$geomean<hlvg[3],"Good","Very good")))
 p<-ggplot(df,aes(x=x,y=y)) + geom_tile(aes(fill=color)) +
-		scale_fill_manual(values=c("#FFFF00","#99CC00","red","#009900")) +
+		scale_fill_manual(values=c("#FEF1C6","#E2EFD9","#F7D1D2","#9CC97D")) +
 		labs(x="Density Index",y="Diversity Index") + theme_bw() +
 		theme(legend.position="none") 
 for(rr in 1:nrow(health)){	#replace pdiv with IndexVal
@@ -195,7 +195,7 @@ p <- p + geom_text(x=health[6,"pdens"],y=health[6,"IndexVal"],label=health[6,"ye
 p <- p + geom_text(x=health[7,"pdens"],y=health[7,"IndexVal"],label=health[7,"year"],vjust = -0.6,size=2)
 p <- p + geom_text(x=health[8,"pdens"],y=health[8,"IndexVal"],label=health[8,"year"],vjust = -0.6,size=2)
 
-png(filename=paste(basepth,"/plots/Marsh_overallHealthIndex_v1A.png",sep=""),width=750,height=700,res=200)
+png(filename=paste(basepth,"/plots/Marsh_overallHealthIndex_v1A.png",sep=""),width=2200,height=2000,res=600)
 print(p)
 dev.off()
 
@@ -209,15 +209,17 @@ divmeans$pdiv<-divmeans$IndexVal/100
 maxabund<-max(df1$IndexVal,na.rm=T)
 densmeans<-unique(df1[,c("YearCollected","IndexVal")]); #densmeans$pdens<-densmeans$IndexVal/maxabund
 densmeans<-na.omit(densmeans)
+maxD<-max(df1$IndexVal,na.rm=T)*1.2
+densmeans$pdens<-densmeans$IndexVal/maxD
 
 health<-divmeans[,c("year","pdiv")];health$pdens<-densmeans$pdens
 health$overall<-sqrt(health$pdiv*health$pdens)*100
 
 p<-ggplot(health,aes(x=year,y=overall)) + 
-		geom_rect(xmin=2008.5,xmax=2017.5,ymin=-7,ymax=30,fill="red") + 
-		geom_rect(xmin=2008.5,xmax=2017.5,ymin=30,ymax=55,fill="#FFFF00") +
-		geom_rect(xmin=2008.5,xmax=2017.5,ymin=55,ymax=80,fill="#99CC00") +
-		geom_rect(xmin=2008.5,xmax=2017.5,ymin=80,ymax=105,fill="#009900") +
+		geom_rect(xmin=2008.5,xmax=2017.5,ymin=-7,ymax=30,fill="#F7D1D2") + 
+		geom_rect(xmin=2008.5,xmax=2017.5,ymin=30,ymax=55,fill="#FEF1C6") +
+		geom_rect(xmin=2008.5,xmax=2017.5,ymin=55,ymax=80,fill="#E2EFD9") +
+		geom_rect(xmin=2008.5,xmax=2017.5,ymin=80,ymax=105,fill="#9CC97D") +
 		geom_hline(yintercept=0,color="black",size=0.5) +
 		geom_hline(yintercept=20,color="black",size=0.5,linetype="dotted") +
 		geom_hline(yintercept=40,color="black",size=0.5,linetype="dotted") +
@@ -229,7 +231,7 @@ p<-ggplot(health,aes(x=year,y=overall)) +
 		scale_y_continuous(limits=c(-2,100),breaks=seq(0,100,20)) +
 		theme_bw() + labs(x="",y="Index of Marsh Health")
 
-png(filename=paste(basepth,"/plots/Marsh_overallHealthIndex_v2.png",sep=""),width=550,height=700,res=200)
+png(filename=paste(basepth,"/plots/Marsh_overallHealthIndex_v2.png",sep=""),width=1600,height=2000,res=600)
 print(p)
 dev.off()
 

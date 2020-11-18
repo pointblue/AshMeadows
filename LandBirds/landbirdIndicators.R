@@ -174,7 +174,7 @@ p<-ggplot(estimates,aes(x=suid,y=Estimate)) + geom_point(aes(color=TransectID)) 
 		theme(axis.text.x=element_text(size=8)) + theme(axis.text.y=element_text(size=6)) +
 	coord_flip() + facet_wrap(~Species,ncol=3) + labs(x="",y="Birds per point",color="Transect")
 
-png(filename=paste(basepth,"/plots/AshWood_abundances.png",sep=""),width=1800,height=1800,res=200)
+png(filename=paste(basepth,"/plots/AshWood_abundances.png",sep=""),width=5400,height=5400,res=600)
 print(p)
 dev.off()
 
@@ -187,7 +187,7 @@ transest$Lower<-transest$Estimate-(1.96*transest$StDev);transest$Lower<-ifelse(t
 p<-ggplot(data=transest,aes(x=TransectID,y=Estimate)) + geom_point() + geom_errorbar(aes(ymin=Lower,ymax=Upper),width=0.5) + theme_bw() +
 		coord_flip() + facet_wrap(~Species,ncol=3) + labs(x="",y="Birds per point",color="Species") + theme(legend.position="none")
 
-png(filename=paste(basepth,"/plots/AshWood_transectAbundances.png",sep=""),width=1500,height=1300,res=200)
+png(filename=paste(basepth,"/plots/AshWood_transectAbundances.png",sep=""),width=4500,height=4000,res=600)
 print(p)
 dev.off()
 
@@ -204,7 +204,7 @@ p<-ggplot(est2,aes(x=year,y=Estimate)) +
 		theme_bw() + theme(axis.text.x=element_blank()) +
 		scale_x_continuous(breaks=2015) + labs(x="Transects",y="Birds per point",color="Transect")
 
-png(filename=paste(basepth,"/plots/AshWood_transectPerformance.png",sep=""),width=500,height=380,res=100)
+png(filename=paste(basepth,"/plots/AshWood_transectPerformance.png",sep=""),width=2500,height=1700,res=600)
 print(p)
 dev.off()
 
@@ -228,7 +228,7 @@ p<-ggplot(est2,aes(x=year,y=Estimate)) +
 		theme_bw() + theme(axis.text.x=element_blank()) +
 		scale_x_continuous(breaks=2015) + labs(x="Transects",y="Density Index (birds/point)")
 
-png(filename=paste(basepth,"/plots/AshWood_abundanceIndex.png",sep=""),width=1000,height=800,res=200)
+png(filename=paste(basepth,"/plots/AshWood_abundanceIndex.png",sep=""),width=2500,height=1700,res=600)
 print(p)
 dev.off()
 
@@ -281,7 +281,7 @@ p<-ggplot(transShannon,aes(x=Location,y=PercentMaxDiversity)) +
 		theme(axis.text.x=element_text(size=8,angle=45,hjust=1)) +
 		labs(x="",y="Diversity Index (% of max. diversity)")
 
-png(filename=paste(basepth,"/plots/AshWood_diversityIndex.png",sep=""),width=600,height=900,res=200)
+png(filename=paste(basepth,"/plots/AshWood_diversityIndex.png",sep=""),width=1500,height=2500,res=600)
 print(p)
 dev.off()
 
@@ -317,11 +317,11 @@ vlvlg<-quantile(fg, probs = quants); vlvg<-as.numeric(vlvlg[[1]])
 df$color<-ifelse(df$index<vlvg[1],"Poor",ifelse(df$index<vlvg[2],"Fair",ifelse(df$index<vlvg[3],"Good","Very good")))
 p<-ggplot(df,aes(x=x,y=y)) + geom_tile(aes(fill=color)) +
 		scale_fill_manual(values=c("#FEF1C6","#E2EFD9","#F7D1D2","#9CC97D")) +
-		geom_point(x=abundanceVal,y=diversityVal,shape=17,size=4) +
+		geom_point(x=abundanceVal,y=diversityVal,shape=17,size=2) +
 		labs(x="Density Index",y="Diversity Index") + theme_bw() +
 		theme(legend.position="none")
 
-png(filename=paste(basepth,"/plots/AshWood_overallHealthIndex.png",sep=""),width=600,height=600,res=200)
+png(filename=paste(basepth,"/plots/AshWood_overallHealthIndex.png",sep=""),width=1500,height=1500,res=600)
 print(p)
 dev.off()
 

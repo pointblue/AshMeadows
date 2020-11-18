@@ -3,6 +3,10 @@
 # Author: lsalas
 ###############################################################################
 
+
+## This file is provided for completeness.
+## Its purpose was exploratory, to help us visualize the survey data and decide on which transects to use
+
  
 points<-read.csv("//prbo.org/Data/Home/Petaluma/lsalas/Documents/lsalas/IandMR8/AshMeadows/GBBOpts_habitatAttrib.csv",stringsAsFactors=F)
 points$transect<-substr(points$SamplingUnitId,1,regexpr("::",points$SamplingUnitId,fixed=T)-1)

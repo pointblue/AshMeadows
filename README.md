@@ -18,5 +18,5 @@ This data file is used by the file makePlots.R (along with the utility scripts) 
 ### How to run
 Run the file AshMeadows_Marsh_Metrics.R first, then the file makePlots.R 
 
-# Note for the R savvy
+#### Note for the R savvy
 A lot of the code can be simplified with plyr and dplyr functions, and magritte pipes, but was intentionally kept simple to make the logic easier to follow by those not familiar with R

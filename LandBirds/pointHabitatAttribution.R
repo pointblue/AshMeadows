@@ -4,15 +4,26 @@
 ###############################################################################
 
 
-library(XLConnect)
-library(rgdal)
-library(sp)
-library(rgeos)
-library(raster)
-library(plyr)
+## This file is used to attribute the survey locations with geospatial data on habitat type.
 
+## Checking for install of necessary packages
+libs<-c("XLConnect","plyr","rgdal","sp","rgeos","raster")
+libcheck<-lapply(libs,function(pp){
+			if(!pp %in% installed.packages()){
+				install.packages(pp,repos="https://cloud.r-project.org/")
+				return(paste(pp,"was installed"))
+			}else{
+				return(paste(pp,"already installed"))
+			}
+		})
+
+## Load libraries
+lapply(libs, require, character.only = TRUE)
+
+## Need to source utility files
 source("C:/Users/lsalas/git/sparklemotion/lsalas_rcode/AshMeadows/Marshbirds/AshMeadows_AnalysisUtils.R")
 
+## Load survey point data
 basepth<-"//prbo.org/Data/Home/Petaluma/lsalas/Documents/lsalas/IandMR8/AshMeadows"
 data<-try(readWorksheetFromFile(paste(basepth,"Ash Meadows NWR NBC data through 2016.xlsx",sep="/"),sheet="Transect Points"))
 names(data)<-c("transect","point","easting","northing")
@@ -20,6 +31,7 @@ dft<-data
 coordinates(data)<-c("easting","northing")
 proj4string(data) <- CRS("+proj=utm +zone=11 +north ellps=NAD27")
 
+## Load vegetation data
 veg<-readOGR("//prbo.org/Data/Home/Petaluma/lsalas/Documents/lsalas/IandMR8/AshMeadows/AHEM_Vegetation_BW_20100308/VegHabitat","Veg_HabitatTypes")
 tproj<-projection(veg)
 mdf <- spTransform(data, CRS(tproj))
@@ -44,6 +56,7 @@ for(rr in 1:nrow(mdf)){
 	points<-rbind(points,adf)
 }
 
+## Attribute and save
 habpresence<-data.frame()
 for(ss in unique(points$SamplingUnitId)){
 	w<-subset(points,SamplingUnitId==ss)
@@ -62,7 +75,8 @@ sum(habpresence$MesquiteB==0 & habpresence$Riparian==0)
 save(habpresence,file=paste(basepth,"/landbirdPoints_attributed_100.RData",sep=""))
 
 
-
+#############################################
+## DO NOT USE
 #These do not work!
 byArea<-aggregate(area~SamplingUnitId,data=points,FUN=max);byArea<-merge(byArea,points,by=c("area","SamplingUnitId"))
 

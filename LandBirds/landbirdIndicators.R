@@ -3,16 +3,37 @@
 # Author: lsalas
 ###############################################################################
 
+####################################################################################################################################
+####################################################################################################################################
+## READ THIS
 
-##Processing GBBO data for visualizations
-#This to include Ash, riparian and mesquite ALL COMBINED
-library(XLConnect)
-library(plyr)
-library(unmarked)
-library(ggplot2)
-library(timeDate)
-libs<-c("XLConnect","plyr","unmarked","ggplot2","timeDate","fitdistrplus")
+# This file is provided for documentation purposes. The objective of the file is to generate the data needed for the 
+# Ash Meadows indicator indices (plots) for landbirds. All the code is contained in this file, including code to generate 
+# the indicator plots. Every time a new dataset is obtained from the Great Basin Bird Observatory dataset,
+# this code file must be run, judiciously inspecting the models and altering the code accordingly to choose the better models
+# and generating the output plots. 
+
+## Attention: the package XLConnect requires that the JRE (java runtime engine) be installed and in the path)
+
+####################################################################################################################################
+####################################################################################################################################
+
+## Checking for install of necessary packages
+libs<-c("XLConnect","plyr","ggplot2","unmarked","fitdistrplus","timeDate","maptools","sp")
+libcheck<-lapply(libs,function(pp){
+			if(!pp %in% installed.packages()){
+				install.packages(pp,repos="https://cloud.r-project.org/")
+				return(paste(pp,"was installed"))
+			}else{
+				return(paste(pp,"already installed"))
+			}
+		})
+
+## Load librariesf
 lapply(libs, require, character.only = TRUE)
+
+###############
+## Functions we need...
 
 generateVisit<-function(df){
 	vdata<-data.frame()
@@ -35,6 +56,7 @@ getJday<-function(df){
 	return(df)
 }
 
+# This function prepares the data for fitting hierarchical imperfect detection models
 makeUDF<-function(df){
 	dfl<-df[,c("suid","TransectID","year","visit","Number")]
 	dfw<-reshape(dfl,idvar=c("suid","TransectID","year"),timevar="visit",direction="wide")
@@ -52,6 +74,7 @@ makeUDF<-function(df){
 	return(udf)
 }
 
+#############################################################################################
 basepth<-"//prbo.org/Data/Home/Petaluma/lsalas/Documents/lsalas/IandMR8/AshMeadows"
 data<-try(readWorksheetFromFile(paste(basepth,"Ash Meadows NWR NBC data through 2016.xlsx",sep="/"),sheet="Point Count Data"))
 #habitat data
@@ -143,7 +166,7 @@ fitstats<-function(mdl) {
 	return(out)
 }
 
-gofrira<-parboot(mdl=est, fitstats, nsim=25, report=1)
+gofrira<-parboot(object=est, fitstats, nsim=25, report=1)
 
 
 ## Plot the average per transect:
@@ -193,10 +216,10 @@ quants<-c(0.25,0.5,0.75)
 vlvlg<-quantile(fg, probs = quants); vlvg<-as.numeric(vlvlg[[1]])
 mv<-mean(estimates$Estimate)
 p<-ggplot(est2,aes(x=year,y=Estimate)) + 
-		geom_rect(xmin=2014.5,xmax=2015.5,ymin=-0.5,ymax=vlvg[1],fill="red") + 
-		geom_rect(xmin=2014.5,xmax=2015.5,ymin=vlvg[1],ymax=vlvg[2],fill="#FFFF00") +
-		geom_rect(xmin=2014.5,xmax=2015.5,ymin=vlvg[2],ymax=vlvg[3],fill="#99CC00") +
-		geom_rect(xmin=2014.5,xmax=2015.5,ymin=vlvg[3],ymax=30,fill="#009900") +
+		geom_rect(xmin=2014.5,xmax=2015.5,ymin=-0.5,ymax=vlvg[1],fill="#F7D1D2") + 
+		geom_rect(xmin=2014.5,xmax=2015.5,ymin=vlvg[1],ymax=vlvg[2],fill="#FEF1C6") +
+		geom_rect(xmin=2014.5,xmax=2015.5,ymin=vlvg[2],ymax=vlvg[3],fill="#E2EFD9") +
+		geom_rect(xmin=2014.5,xmax=2015.5,ymin=vlvg[3],ymax=30,fill="#9CC97D") +
 		geom_point(aes(color=TransectID),position=position_dodge(width=0.5)) + 
 		geom_point(aes(y=TransectMean,color=TransectID),shape=17,size=3,position=position_dodge(width=0.5)) +
 		#geom_boxplot(fill=NA,size=0.6, width=0.3) + theme_bw() +
@@ -217,7 +240,7 @@ write.csv(tmvss,file=paste(basepth,"/plots/AshWood_abundanceIndex.csv",sep=""))
 
 #####################################################################################
 ### Diversity index...
-divind<-read.csv("C:/Users/lsalas/Dropbox/FWS_I&M/AshMeadows/Summary Indicators/Ash_Riparian/DiversityIndicators.csv",stringsAsFactors=F)
+divind<-read.csv("//prbo.org/Data/Home/Petaluma/lsalas/Documents/lsalas/IandMR8/AshMeadows/Summary Indicators/Ash_Riparian/DiversityIndicators.csv",stringsAsFactors=F)
 
 #create table with max number of detections for the indicators:
 divdat<-aggregate(Number~Species+year,subset(data,Species %in% divind$Species),sum,na.rm=T)
@@ -248,10 +271,10 @@ transShannon$PercentMaxDiversity<-round(as.numeric(transShannon$Diversity)*100/n
 write.csv(transShannon,file=paste(basepth,"/plots/AshWood_diversityIndex.csv",sep=""))
 
 p<-ggplot(transShannon,aes(x=Location,y=PercentMaxDiversity)) + 
-		geom_rect(xmin=0,xmax=5.8,ymin=-5,ymax=25,fill="red") + 
-		geom_rect(xmin=0,xmax=5.8,ymin=25,ymax=50,fill="#FFFF00") +
-		geom_rect(xmin=0,xmax=5.8,ymin=50,ymax=75,fill="#99CC00") +
-		geom_rect(xmin=0,xmax=5.8,ymin=75,ymax=100,fill="#009900") +
+		geom_rect(xmin=0,xmax=5.8,ymin=-5,ymax=25,fill="#F7D1D2") + 
+		geom_rect(xmin=0,xmax=5.8,ymin=25,ymax=50,fill="#FEF1C6") +
+		geom_rect(xmin=0,xmax=5.8,ymin=50,ymax=75,fill="#E2EFD9") +
+		geom_rect(xmin=0,xmax=5.8,ymin=75,ymax=100,fill="#9CC97D") +
 		geom_point(shape=17,size=3) +
 		scale_y_continuous(limits=c(-5,100),breaks=seq(0,100,20)) +
 		theme_bw() + 
@@ -286,14 +309,14 @@ for(yy in yv){
 	}
 }
 summary(df$index)
-fg<-try(fitdist(df$index, distr="unif",method="mme"),silent=TRUE)
+fg<-try(fitdist(df$index, distr="gamma",method="mme"),silent=TRUE)
 plot(fg)
 quants<-c(0.30,0.50,0.75)
 vlvlg<-quantile(fg, probs = quants); vlvg<-as.numeric(vlvlg[[1]])
 
 df$color<-ifelse(df$index<vlvg[1],"Poor",ifelse(df$index<vlvg[2],"Fair",ifelse(df$index<vlvg[3],"Good","Very good")))
 p<-ggplot(df,aes(x=x,y=y)) + geom_tile(aes(fill=color)) +
-		scale_fill_manual(values=c("#FFFF00","#99CC00","red","#009900")) +
+		scale_fill_manual(values=c("#FEF1C6","#E2EFD9","#F7D1D2","#9CC97D")) +
 		geom_point(x=abundanceVal,y=diversityVal,shape=17,size=4) +
 		labs(x="Density Index",y="Diversity Index") + theme_bw() +
 		theme(legend.position="none")

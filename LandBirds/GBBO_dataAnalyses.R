@@ -8,6 +8,7 @@
 ## This is Ash Meadows Point Count data curated by GBBO
 ## This code file generates a series of graphs that describe the survey effort (e.g., number of transects run each year)
 ## and the observations (e.g., number of species detected, top species detected, etc.)
+## The purpose of this code file is for understanding the survey data and inspecting for quality
 
 # Libraries needed
 library(XLConnect)

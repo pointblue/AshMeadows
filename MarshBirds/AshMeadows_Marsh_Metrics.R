@@ -9,7 +9,7 @@
 ## READ THIS
 
 # This file is provided for documentation purposes. The objective of the file is to generate the data needed for the 
-# Ash Meadows indicator indices (plots), in the code file makePlots.R
+# Ash Meadows indicator indices (plots) for secretive marshbirds, in the code file makePlots.R
 # Every time a new dataset is pulled from the AKN (for now using the Downloader tool: https://data.pointblue.org/apps/downloader/)
 # this code file must be run, judiciously inspecting the models and altering the code accordingly to choose the better models
 # and generating the file marshIndicators_Data.RData 
